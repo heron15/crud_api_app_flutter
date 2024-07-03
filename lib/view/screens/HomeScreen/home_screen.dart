@@ -9,6 +9,7 @@ import 'package:crud_operation_flutter/view/screens/HomeScreen/inner/custom_prod
 import 'package:crud_operation_flutter/view/screens/HomeScreen/inner/view_type.dart';
 import 'package:crud_operation_flutter/view/widgets/custom_alert_dialog.dart';
 import 'package:crud_operation_flutter/view/widgets/custom_toast.dart';
+import 'package:crud_operation_flutter/view/widgets/loading_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
@@ -25,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ViewType _viewType = ViewType.list;
 
   bool _productInProgress = false;
+  bool _deleteInProgress = false;
 
   List<ProductModel> productList = [];
 
@@ -40,6 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('CRUD App'),
         actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.search),
+          ),
           IconButton(
             onPressed: _toggleViewType,
             icon: Icon(
@@ -87,6 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.pop(context);
                               },
                               () {
+                                _deleteProduct(productList[index].sId);
                                 Navigator.pop(context);
                               },
                             );
@@ -109,7 +116,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               onPressedEdit: () {
                                 _onTapGoEditProductScreen(productList[index]);
                               },
-                              onPressedDelete: () {},
+                              onPressedDelete: () {
+                                customAlertDialog(
+                                  context,
+                                  'Are you sure you want to delete it!',
+                                  () {
+                                    Navigator.pop(context);
+                                  },
+                                  () {
+                                    _deleteProduct(productList[index].sId);
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
                             );
                           },
                         );
@@ -157,18 +176,57 @@ class _HomeScreenState extends State<HomeScreen> {
       ProductWrapperModel productWrapperModel = ProductWrapperModel.fromJson(response.responseData);
       productList = productWrapperModel.productList ?? [];
     } else {
-      customToast(
-        response.errorMessage ?? "Data loaded failed!",
-        Icons.error_outline,
-        AppColor.red,
-        AppColor.white,
-      );
+      if (mounted) {
+        customToast(
+          response.errorMessage ?? "Data loaded failed!",
+          Icons.error_outline,
+          AppColor.red,
+          AppColor.white,
+        ).show(context);
+      }
     }
 
     _productInProgress = false;
 
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> _deleteProduct(String? id) async {
+    _deleteInProgress = true;
+
+    if (mounted) {
+      setState(() {});
+    }
+
+    NetworkResponseModel responseModel = await NetworkCaller.getRequest(ApiUrl.deleteUrl(id));
+
+    _deleteInProgress = false;
+
+    if (mounted) {
+      setState(() {});
+    }
+
+    if (responseModel.isSuccess) {
+      if (mounted) {
+        customToast(
+          "Delete success!",
+          Icons.done,
+          AppColor.green,
+          AppColor.white,
+        ).show(context);
+      }
+      _getProduct();
+    } else {
+      if (mounted) {
+        customToast(
+          "Something went wrong!!",
+          Icons.error,
+          AppColor.red,
+          AppColor.white,
+        ).show(context);
+      }
     }
   }
 }
