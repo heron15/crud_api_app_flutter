@@ -5,6 +5,7 @@ import 'package:crud_operation_flutter/data/services/network_caller.dart';
 import 'package:crud_operation_flutter/utils/api_url.dart';
 import 'package:crud_operation_flutter/utils/app_color.dart';
 import 'package:crud_operation_flutter/utils/app_route.dart';
+import 'package:crud_operation_flutter/view/screens/CustomSearch/custom_search.dart';
 import 'package:crud_operation_flutter/view/screens/HomeScreen/inner/custom_product_list.dart';
 import 'package:crud_operation_flutter/view/screens/HomeScreen/inner/view_type.dart';
 import 'package:crud_operation_flutter/view/widgets/custom_alert_dialog.dart';
@@ -43,7 +44,17 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('CRUD App'),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearch(
+                  productList: productList,
+                  onTapGoEditProductScreen: onTapGoEditProductScreen,
+                  deleteProduct: deleteProduct,
+                  onDeleteProduct: _getProduct,
+                ),
+              );
+            },
             icon: const Icon(Icons.search),
           ),
           IconButton(
@@ -76,6 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
               child: _viewType == ViewType.list
+
+                  ///------list view item------///
                   ? ListView.builder(
                       physics: const BouncingScrollPhysics(),
                       itemCount: productList.length,
@@ -83,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         return CustomProductList(
                           productModel: productList[index],
                           onPressedEdit: () {
-                            _onTapGoEditProductScreen(productList[index]);
+                            onTapGoEditProductScreen(productList[index]);
                           },
                           onPressedDelete: () {
                             customAlertDialog(
@@ -93,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Navigator.pop(context);
                               },
                               () {
-                                _deleteProduct(productList[index].sId);
+                                deleteProduct(productList[index].sId);
                                 Navigator.pop(context);
                               },
                             );
@@ -101,6 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     )
+
+                  ///------Grid view item------///
                   : OrientationBuilder(
                       builder: (BuildContext context, Orientation orientation) {
                         return StaggeredGridView.countBuilder(
@@ -114,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             return CustomProductGrid(
                               productModel: productList[index],
                               onPressedEdit: () {
-                                _onTapGoEditProductScreen(productList[index]);
+                                onTapGoEditProductScreen(productList[index]);
                               },
                               onPressedDelete: () {
                                 customAlertDialog(
@@ -124,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.pop(context);
                                   },
                                   () {
-                                    _deleteProduct(productList[index].sId);
+                                    deleteProduct(productList[index].sId);
                                     Navigator.pop(context);
                                   },
                                 );
@@ -141,11 +156,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  ///------go to add product screen function------///
   void _onTapGoAddProductScreen() {
     Navigator.pushNamed(context, AppRoute.addProduct);
   }
 
-  void _onTapGoEditProductScreen(ProductModel productModel) {
+  ///------go to edit screen function------///
+  void onTapGoEditProductScreen(ProductModel productModel) {
     Navigator.pushNamed(
       context,
       AppRoute.editProductScreen,
@@ -153,6 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  ///------view type(list/grid) change function------///
   void _toggleViewType() {
     setState(() {
       if (_viewType == ViewType.list) {
@@ -163,6 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  ///------get product api call function------///
   Future<void> _getProduct() async {
     _productInProgress = true;
 
@@ -193,7 +212,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _deleteProduct(String? id) async {
+  ///------Delete api call function------///
+  Future<void> deleteProduct(String? id) async {
     _deleteInProgress = true;
 
     if (mounted) {

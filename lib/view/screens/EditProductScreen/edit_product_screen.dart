@@ -39,7 +39,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Product'),
+        title: const Text('Edit Product'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
